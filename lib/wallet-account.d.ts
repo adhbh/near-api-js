@@ -10,6 +10,7 @@ interface SignInOptions {
     methodNames?: string[];
     successUrl?: string;
     failureUrl?: string;
+    newTab?: boolean;
 }
 /**
  * Information to send NEAR wallet for signing transactions and redirecting the browser back to the calling application

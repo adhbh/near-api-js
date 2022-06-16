@@ -2,7 +2,7 @@
  * The classes in this module are used in conjunction with the {@link BrowserLocalStorageKeyStore}. This module exposes two classes:
  * * {@link WalletConnection} which redirects users to {@link https://docs.near.org/docs/tools/near-wallet | NEAR Wallet} for key management.
  * * {@link ConnectedWalletAccount} is an {@link Account} implementation that uses {@link WalletConnection} to get keys
- * 
+ *
  * @module walletAccount
  */
 import depd from 'depd';
@@ -28,6 +28,7 @@ interface SignInOptions {
     // TODO: Replace following with single callbackUrl
     successUrl?: string;
     failureUrl?: string;
+    newTab?: boolean;
 }
 
 /**
@@ -45,13 +46,13 @@ interface RequestSignTransactionsOptions {
 /**
  * This class is used in conjunction with the {@link BrowserLocalStorageKeyStore}.
  * It redirects users to {@link https://docs.near.org/docs/tools/near-wallet | NEAR Wallet} for key management.
- * 
+ *
  * @example {@link https://docs.near.org/docs/develop/front-end/naj-quick-reference#wallet}
  * @example
  * ```js
  * // create new WalletConnection instance
  * const wallet = new WalletConnection(near, 'my-app');
- * 
+ *
  * // If not signed in redirect to the NEAR wallet to sign in
  * // keys will be stored in the BrowserLocalStorageKeyStore
  * if(!wallet.isSingnedIn()) return wallet.requestSignIn()
@@ -151,7 +152,7 @@ export class WalletConnection {
         const newUrl = new URL(this._walletBaseUrl + LOGIN_WALLET_URL_SUFFIX);
         newUrl.searchParams.set('success_url', options.successUrl || currentUrl.href);
         newUrl.searchParams.set('failure_url', options.failureUrl || currentUrl.href);
-        if (options.contractId) {            
+        if (options.contractId) {
             /* Throws exception if contract account does not exist */
             const contractAccount = await this._near.account(options.contractId);
             await contractAccount.state();
@@ -168,7 +169,7 @@ export class WalletConnection {
             });
         }
 
-        window.location.assign(newUrl.toString());
+        options.newTab ? window.open(newUrl.toString(), '_blank') : window.location.assign(newUrl.toString());
     }
 
     /**
