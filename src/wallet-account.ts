@@ -29,6 +29,7 @@ interface SignInOptions {
     successUrl?: string;
     failureUrl?: string;
     newTab?: boolean;
+    returnUrl?: boolean;
 }
 
 /**
@@ -138,7 +139,7 @@ export class WalletConnection {
         title?: string,
         successUrl?: string,
         failureUrl?: string
-    ) {
+    ): Promise<string | null> {
         let options: SignInOptions;
         if (typeof contractIdOrOptions === 'string') {
             const deprecate = depd('requestSignIn(contractId, title)');
@@ -169,7 +170,11 @@ export class WalletConnection {
             });
         }
 
+        if(options.returnUrl)  {
+            return newUrl.toString();
+        }
         options.newTab ? window.open(newUrl.toString(), '_blank') : window.location.assign(newUrl.toString());
+        return null;
     }
 
     /**

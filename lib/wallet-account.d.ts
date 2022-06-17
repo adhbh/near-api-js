@@ -11,6 +11,7 @@ interface SignInOptions {
     successUrl?: string;
     failureUrl?: string;
     newTab?: boolean;
+    returnUrl?: boolean;
 }
 /**
  * Information to send NEAR wallet for signing transactions and redirecting the browser back to the calling application
@@ -86,7 +87,7 @@ export declare class WalletConnection {
      * wallet.requestSignIn({ contractId: 'account-with-deploy-contract.near' });
      * ```
      */
-    requestSignIn(contractIdOrOptions?: string | SignInOptions, title?: string, successUrl?: string, failureUrl?: string): Promise<void>;
+    requestSignIn(contractIdOrOptions?: string | SignInOptions, title?: string, successUrl?: string, failureUrl?: string): Promise<string | null>;
     /**
      * Requests the user to quickly sign for a transaction or batch of transactions by redirecting to the NEAR wallet.
      */
