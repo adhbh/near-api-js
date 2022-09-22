@@ -25,6 +25,7 @@ interface ChangeMethodOptions {
     amount?: BN;
     meta?: string;
     callbackUrl?: string;
+    nonce?: number;
 }
 
 export interface ContractMethods {
@@ -118,7 +119,8 @@ export class Contract {
                             methodName,
                             args: args[0],
                             gas: args[1],
-                            amount: args[2]
+                            amount: args[2],
+                            nonce: args[3]
                         });
                     }
 
@@ -128,7 +130,7 @@ export class Contract {
         });
     }
 
-    private async _changeMethod({ args, methodName, gas, amount, meta, callbackUrl }: ChangeMethodOptions) {
+    private async _changeMethod({ args, methodName, gas, amount, meta, callbackUrl, nonce }: ChangeMethodOptions) {
         validateBNLike({ gas, amount });
 
         return await this.account.functionCall({
@@ -138,7 +140,8 @@ export class Contract {
             gas,
             attachedDeposit: amount,
             walletMeta: meta,
-            walletCallbackUrl: callbackUrl
+            walletCallbackUrl: callbackUrl,
+            nonce,
         });
     }
 }

@@ -29,7 +29,7 @@ import { DEFAULT_FUNCTION_CALL_GAS } from './constants';
 import exponentialBackoff from './utils/exponential-backoff';
 
 // Default number of retries with different nonce before giving up on a transaction.
-const TX_NONCE_RETRY_NUMBER = 12;
+const TX_NONCE_RETRY_NUMBER = 1;
 
 // Default wait until next retry in millis.
 const TX_NONCE_RETRY_WAIT = 500;
@@ -67,6 +67,7 @@ export interface SignAndSendTransactionOptions {
      */
     walletCallbackUrl?: string;
     returnError?: boolean;
+    nonce?: number;
 }
 
 /**
@@ -105,6 +106,8 @@ export interface FunctionCallOptions {
      * Is contract from JS SDK, automatically encodes args from JS SDK to binary.
      */
     jsContract?: boolean;
+
+    nonce?: number;
 }
 
 interface ReceiptLogWithFailure {
@@ -163,24 +166,24 @@ export class Account {
 
     /** @hidden */
     private printLogsAndFailures(contractId: string, results: [ReceiptLogWithFailure]) {
-      if (!process.env["NEAR_NO_LOGS"]){
-        for (const result of results) {
-            console.log(`Receipt${result.receiptIds.length > 1 ? 's' : ''}: ${result.receiptIds.join(', ')}`);
-            this.printLogs(contractId, result.logs, '\t');
-            if (result.failure) {
-                console.warn(`\tFailure [${contractId}]: ${result.failure}`);
+        if (!process.env['NEAR_NO_LOGS']){
+            for (const result of results) {
+                console.log(`Receipt${result.receiptIds.length > 1 ? 's' : ''}: ${result.receiptIds.join(', ')}`);
+                this.printLogs(contractId, result.logs, '\t');
+                if (result.failure) {
+                    console.warn(`\tFailure [${contractId}]: ${result.failure}`);
+                }
             }
         }
-      }
     }
 
     /** @hidden */
     private printLogs(contractId: string, logs: string[], prefix = '') {
-      if (!process.env["NEAR_NO_LOGS"]){
-        for (const log of logs) {
-            console.log(`${prefix}Log [${contractId}]: ${log}`);
+        if (!process.env['NEAR_NO_LOGS']){
+            for (const log of logs) {
+                console.log(`${prefix}Log [${contractId}]: ${log}`);
+            }
         }
-      }
     }
 
     /**
@@ -189,7 +192,7 @@ export class Account {
      * @param actions list of actions to perform as part of the transaction
      * @see {@link JsonRpcProvider.sendTransaction}
      */
-    protected async signTransaction(receiverId: string, actions: Action[]): Promise<[Uint8Array, SignedTransaction]> {
+    protected async signTransaction(receiverId: string, actions: Action[], extNonce?: number): Promise<[Uint8Array, SignedTransaction]> {
         const accessKeyInfo = await this.findAccessKey(receiverId, actions);
         if (!accessKeyInfo) {
             throw new TypedError(`Can not sign transactions for account ${this.accountId} on network ${this.connection.networkId}, no matching key pair found in ${this.connection.signer}.`, 'KeyNotFound');
@@ -199,7 +202,10 @@ export class Account {
         const block = await this.connection.provider.block({ finality: 'final' });
         const blockHash = block.header.hash;
 
-        const nonce = ++accessKey.nonce;
+        let nonce = ++accessKey.nonce;
+        if(extNonce) {
+            nonce = extNonce;
+        }
         return await signTransaction(
             receiverId, nonce, actions, baseDecode(blockHash), this.connection.signer, this.accountId, this.connection.networkId
         );
@@ -233,11 +239,11 @@ export class Account {
         return this.signAndSendTransactionV2({ receiverId, actions });
     }
 
-    private async signAndSendTransactionV2({ receiverId, actions, returnError }: SignAndSendTransactionOptions): Promise<FinalExecutionOutcome> {
+    private async signAndSendTransactionV2({ receiverId, actions, returnError, nonce }: SignAndSendTransactionOptions): Promise<FinalExecutionOutcome> {
         let txHash, signedTx;
         // TODO: TX_NONCE (different constants for different uses of exponentialBackoff?)
         const result = await exponentialBackoff(TX_NONCE_RETRY_WAIT, TX_NONCE_RETRY_NUMBER, TX_NONCE_RETRY_WAIT_BACKOFF, async () => {
-            [txHash, signedTx] = await this.signTransaction(receiverId, actions);
+            [txHash, signedTx] = await this.signTransaction(receiverId, actions, nonce);
             const publicKey = signedTx.transaction.publicKey;
 
             try {
@@ -433,7 +439,7 @@ export class Account {
         });
     }
 
-    private functionCallV2({ contractId, methodName, args = {}, gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit, walletMeta, walletCallbackUrl, stringify, jsContract }: FunctionCallOptions): Promise<FinalExecutionOutcome> {
+    private functionCallV2({ contractId, methodName, args = {}, gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit, walletMeta, walletCallbackUrl, stringify, jsContract, nonce }: FunctionCallOptions): Promise<FinalExecutionOutcome> {
         this.validateArgs(args);
         let functionCallArgs;
 
@@ -453,7 +459,8 @@ export class Account {
             // eslint-disable-next-line prefer-spread
             actions: [functionCall.apply(void 0, functionCallArgs)],
             walletMeta,
-            walletCallbackUrl
+            walletCallbackUrl,
+            nonce
         });
     }
 

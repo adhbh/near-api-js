@@ -33,6 +33,7 @@ export interface SignAndSendTransactionOptions {
      */
     walletCallbackUrl?: string;
     returnError?: boolean;
+    nonce?: number;
 }
 /**
  * Options used to initiate a function call (especially a change function call)
@@ -69,6 +70,7 @@ export interface FunctionCallOptions {
      * Is contract from JS SDK, automatically encodes args from JS SDK to binary.
      */
     jsContract?: boolean;
+    nonce?: number;
 }
 declare function parseJsonFromRawResponse(response: Uint8Array): any;
 declare function bytesJsonStringify(input: any): Buffer;
@@ -101,7 +103,7 @@ export declare class Account {
      * @param actions list of actions to perform as part of the transaction
      * @see {@link JsonRpcProvider.sendTransaction}
      */
-    protected signTransaction(receiverId: string, actions: Action[]): Promise<[Uint8Array, SignedTransaction]>;
+    protected signTransaction(receiverId: string, actions: Action[], extNonce?: number): Promise<[Uint8Array, SignedTransaction]>;
     /**
      * Sign a transaction to preform a list of actions and broadcast it using the RPC API.
      * @see {@link JsonRpcProvider.sendTransaction}

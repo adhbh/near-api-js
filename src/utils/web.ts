@@ -6,7 +6,7 @@ import { logWarning } from './errors';
 
 const START_WAIT_TIME_MS = 1000;
 const BACKOFF_MULTIPLIER = 1.5;
-const RETRY_NUMBER = 10;
+const RETRY_NUMBER = 1;
 
 export interface ConnectionInfo {
     url: string;
