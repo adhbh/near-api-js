@@ -22,10 +22,8 @@ export class TypedError extends Error {
 
 export class ErrorContext {
     transactionHash?: string;
-    type?: string;
-    constructor(transactionHash?: string, type?: string) {
+    constructor(transactionHash?: string) {
         this.transactionHash = transactionHash;
-        this.type = type;
     }
 }
 
