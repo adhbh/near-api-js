@@ -108,7 +108,7 @@ export class Contract {
                 writable: false,
                 enumerable: true,
                 value: nameFunction(methodName, async (...args: any[]) => {
-                    if (args.length && (args.length > 3 || !(isObject(args[0]) || isUint8Array(args[0])))) {
+                    if (args.length && (args.length > 4 || !(isObject(args[0]) || isUint8Array(args[0])))) {
                         throw new PositionalArgsError();
                     }
 

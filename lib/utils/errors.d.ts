@@ -11,6 +11,7 @@ export declare class TypedError extends Error {
 }
 export declare class ErrorContext {
     transactionHash?: string;
-    constructor(transactionHash?: string);
+    type?: string;
+    constructor(transactionHash?: string, type?: string);
 }
 export declare function logWarning(...args: any[]): void;

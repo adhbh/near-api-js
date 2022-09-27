@@ -34,7 +34,7 @@ import { SignedTransaction } from '../transaction';
 export { TypedError, ErrorContext };
 
 // Default number of retries before giving up on a request.
-const REQUEST_RETRY_NUMBER = 1;
+const REQUEST_RETRY_NUMBER = 3;
 
 // Default wait until next retry in millis.
 const REQUEST_RETRY_WAIT = 500;

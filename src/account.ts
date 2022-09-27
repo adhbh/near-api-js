@@ -259,7 +259,7 @@ export class Account {
                     return null;
                 }
 
-                error.context = new ErrorContext(baseEncode(txHash));
+                error.context = new ErrorContext(baseEncode(txHash), error.type);
                 throw error;
             }
         });
